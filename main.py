@@ -1,15 +1,11 @@
 import time
+import multiprocessing
 from hdwallet import HDWallet
 from hdwallet.symbols import BTG as SYMBOL
 from hexer import mHash
 import requests
-from colorama import init, Fore, Back, Style
+from colorama import init, Fore, Style
 import lxml.html as lh
-from concurrent.futures import ThreadPoolExecutor
-
-# Set the title of the console window
-def set_console_title(title):
-    print("\033]0;" + title + "\007", end="")  # This sets the terminal title
 
 init()
 
@@ -30,26 +26,21 @@ def process_address(hex64):
     xtxid = get_bal(addr)
     
     if xtxid == '0 BTG':
-        print(Fore.RED, 'ADRES:', str(addr), 'PRİVATE KEY:', str(priv), 'BALLANCE:', str(xtxid), Style.RESET_ALL)
+        print(Fore.RED, 'ADRES:', str(addr), 'PRİVATE KEY:', str(priv), 'BALANCE:', str(xtxid), Style.RESET_ALL)
     else:
-        print(Fore.GREEN, 'ADRES:', str(addr), 'PRİVATE KEY:', str(priv), 'BALLANCE:', str(xtxid), Style.RESET_ALL)
-
-        ifer = '0 BTG'
-        if str(xtxid) != str(ifer):
-            hit_info = f"ADRES: {addr} PRİVATE KEY: {priv} BALLANCE: {xtxid}\n"
-            with open("hits.txt", "a") as f:
-                f.write(hit_info)
-                f.write("PRİVATE KEY = " + str(priv))
-                f.write("\n================[DΞİTY#5637]================")
+        print(Fore.GREEN, 'ADRES:', str(addr), 'PRİVATE KEY:', str(priv), 'BALANCE:', str(xtxid), Style.RESET_ALL)
 
 def main():
-    set_console_title("BTG Wallet Miner - Checked: 0 | EARN: 0 BTG ~ 0₺")
+    num_cores = multiprocessing.cpu_count()
+    target_cpu_percent = 60
+    num_processes = int(num_cores * target_cpu_percent / 100)
+    
+    pool = multiprocessing.Pool(processes=num_processes)
 
-    with ThreadPoolExecutor(max_workers=50) as executor:
-        while True:
-            hex64_list = [mHash() for _ in range(400)]
-            for hex64 in hex64_list:
-                executor.submit(process_address, hex64)
+    while True:
+        hex64_list = [mHash() for _ in range(400)]
+        pool.map(process_address, hex64_list)
+        time.sleep(1)
 
 if __name__ == "__main__":
     main()
